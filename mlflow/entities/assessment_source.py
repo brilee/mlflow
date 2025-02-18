@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from mlflow.entities._mlflow_object import _MlflowObject
 from mlflow.exceptions import MlflowException
@@ -12,18 +12,15 @@ class AssessmentSource(_MlflowObject):
     Source of an assessment (human, LLM as a judge with GPT-4, etc).
     """
 
-    def __init__(self, source_type: str, source_id: str, metadata: Optional[dict[str, Any]] = None):
+    def __init__(self, source_type: str, source_id: str):
         """Construct a new mlflow.entities.AssessmentSource instance.
 
         Args:
             source_type: The type of the assessment source (AssessmentSourceType).
             source_id: An identifier for the source, e.g. user ID or LLM judge ID.
-            metadata: Additional metadata about the source, e.g. human-readable name, inlined LLM
-                judge parameters, etc.
         """
         self._source_type = AssessmentSourceType._standardize(source_type)
         self._source_id = source_id
-        self._metadata = metadata or {}
 
     @property
     def source_type(self) -> str:
@@ -35,11 +32,6 @@ class AssessmentSource(_MlflowObject):
         """The identifier for the source."""
         return self._source_id
 
-    @property
-    def metadata(self) -> dict[str, Any]:
-        """The additional metadata about the source."""
-        return self._metadata
-
     def __eq__(self, __o):
         if isinstance(__o, self.__class__):
             return self.to_dictionary() == __o.to_dictionary()
@@ -50,7 +42,6 @@ class AssessmentSource(_MlflowObject):
         return {
             "source_type": self.source_type,
             "source_id": self.source_id,
-            "metadata": self.metadata,
         }
 
     @classmethod
@@ -66,16 +57,15 @@ class AssessmentSource(_MlflowObject):
         """
         source_type = source_dict["source_type"]
         source_id = source_dict["source_id"]
-        metadata = source_dict.get("metadata")
-        return cls(source_type=source_type, source_id=source_id, metadata=metadata)
+        return cls(source_type=source_type, source_id=source_id)
 
 
 @experimental
 class AssessmentSourceType:
-    AI_JUDGE = "AI_JUDGE"
+    LLM_JUDGE = "LLM_JUDGE"
     HUMAN = "HUMAN"
     CODE = "CODE"
-    _SOURCE_TYPES = [AI_JUDGE, HUMAN, CODE]
+    _SOURCE_TYPES = [LLM_JUDGE, HUMAN, CODE]
 
     def __init__(self, source_type: str):
         self._source_type = AssessmentSourceType._parse(source_type)
